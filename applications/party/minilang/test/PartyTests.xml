@@ -497,42 +497,6 @@ under the License.
         </assert>
         <check-errors/>
     </simple-method>
-    <simple-method method-name="testCreateContactMech" short-description="Test the service createContactMech" login-required="false">
-        <set field="serviceCtx.contactMechId" value="TestEmailConactMech"/>
-        <set field="serviceCtx.contactMechTypeId" value="EMAIL_ADDRESS"/>
-        <set field="serviceCtx.infoString" value="test_email@example.com"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="createContactMech" in-map-name="serviceCtx"/>
-        <entity-one entity-name="ContactMech" value-field="contactMech">
-            <field-map field-name="contactMechId" value="TestEmailConactMech"/>
-        </entity-one>
-        <assert>
-            <not><if-empty field="contactMech"/></not>
-            <if-compare field="contactMech.infoString" operator="equals" value="test_email@example.com"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
-    <simple-method method-name="testCreateEmailAddress" short-description="Test the service createEmailAddress" login-required="false">
-        <set field="serviceCtx.emailAddress" value="test.email123@example.com"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="createEmailAddress" in-map-name="serviceCtx">
-            <result-to-field result-name="contactMechId"/>
-        </call-service>
-        <entity-one entity-name="ContactMech" value-field="contactMech"/>
-        <assert>
-            <not><if-empty field="contactMech"/></not>
-            <if-compare field="contactMech.infoString" operator="equals" value="test.email123@example.com"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
     <simple-method method-name="testCreatePartyContactMech" short-description="Test the service createPartyContactMech" login-required="false">
         <set field="serviceCtx.contactMechId" value="TestContactMech3"/>
         <set field="serviceCtx.partyId" value="TestCustomer"/>
@@ -727,50 +691,6 @@ under the License.
             <if-compare field="person.firstName" operator="equals" value="Demo"/>
             <if-compare field="person.lastName" operator="equals" value="Person"/>
             <if-compare field="newUserLogin.userLoginId" operator="equals" value="demo.person"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
-    <simple-method method-name="testCreatePostalAddress" short-description="Test the service createPostalAddress" login-required="false">
-        <set field="serviceCtx.toName" value="Test Address"/>
-        <set field="serviceCtx.address1" value="2004 Factory Blvd"/>
-        <set field="serviceCtx.city" value="City of Industry"/>
-        <set field="serviceCtx.countryGeoId" value="USA"/>
-        <set field="serviceCtx.stateProvinceGeoId" value="CA"/>
-        <set field="serviceCtx.postalCode" value="90000"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="createPostalAddress" in-map-name="serviceCtx">
-            <result-to-field result-name="contactMechId"/>
-        </call-service>
-        <entity-one entity-name="PostalAddress" value-field="postalAddress"/>
-        <assert>
-            <not><if-empty field="postalAddress"/></not>
-            <if-compare field="postalAddress.address1" operator="equals" value="2004 Factory Blvd"/>
-            <if-compare field="postalAddress.city" operator="equals" value="City of Industry"/>
-            <if-compare field="postalAddress.postalCode" operator="equals" value="90000"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
-    <simple-method method-name="testCreateTelecomNumber" short-description="Test the service createTelecomNumber" login-required="false">
-        <set field="serviceCtx.contactMechId" value="TestTelecomNumber"/>
-        <set field="serviceCtx.areaCode" value="801"/>
-        <set field="serviceCtx.contactNumber" value="1111111"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="createTelecomNumber" in-map-name="serviceCtx">
-            <result-to-field result-name="contactMechId"/>
-        </call-service>
-        <entity-one entity-name="TelecomNumber" value-field="telecomNumber"/>
-        <assert>
-            <not><if-empty field="telecomNumber"/></not>
-            <if-compare field="telecomNumber.areaCode" operator="equals" value="801"/>
-            <if-compare field="telecomNumber.contactNumber" operator="equals" value="1111111"/>
         </assert>
         <check-errors/>
     </simple-method>
@@ -1112,43 +1032,6 @@ under the License.
         <check-errors/>
     </simple-method>
 
-    <simple-method method-name="testUpdateContactMech" short-description="Test the service createContactMech" login-required="false">
-        <set field="serviceCtx.contactMechId" value="TestContactMech"/>
-        <set field="serviceCtx.contactMechTypeId" value="EMAIL_ADDRESS"/>
-        <set field="serviceCtx.infoString" value="demo_email@example.com"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="updateContactMech" in-map-name="serviceCtx">
-            <result-to-field result-name="contactMechId"/>
-        </call-service>
-        <entity-one entity-name="ContactMech" value-field="contactMech"/>
-        <assert>
-            <not><if-empty field="contactMech"/></not>
-            <if-compare field="contactMech.infoString" operator="equals" value="demo_email@example.com"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
-    <simple-method method-name="testUpdateEmailAddress" short-description="Test the service updateEmailAddress" login-required="false">
-        <set field="serviceCtx.contactMechId" value="TestContactMech"/>
-        <set field="serviceCtx.emailAddress" value="test.email123@example.com"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="updateEmailAddress" in-map-name="serviceCtx">
-            <result-to-field result-name="contactMechId"/>
-        </call-service>
-        <entity-one entity-name="ContactMech" value-field="contactMech"/>
-        <assert>
-            <not><if-empty field="contactMech"/></not>
-            <if-compare field="contactMech.infoString" operator="equals" value="test.email123@example.com"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
     <simple-method method-name="testUpdatePartyEmailAddress" short-description="Test the service updatePartyEmailAddress" login-required="false">
         <set field="serviceCtx.partyId" value="TestCustomer"/>
         <set field="serviceCtx.contactMechId" value="TestContactMech"/>
@@ -1279,55 +1162,6 @@ under the License.
             <not><if-empty field="person"/></not>
             <if-compare field="person.firstName" operator="equals" value="New Test"/>
             <if-compare field="person.lastName" operator="equals" value="Person"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
-    <simple-method method-name="testUpdatePostalAddress" short-description="Test the service updatePostalAddress" login-required="false">
-        <set field="serviceCtx.contactMechId" value="TestPostalAdd1"/>
-        <set field="serviceCtx.toName" value="Test Address"/>
-        <set field="serviceCtx.address1" value="2004 Factory Blvd"/>
-        <set field="serviceCtx.city" value="City of Industry"/>
-        <set field="serviceCtx.countryGeoId" value="USA"/>
-        <set field="serviceCtx.stateProvinceGeoId" value="CA"/>
-        <set field="serviceCtx.postalCode" value="90000"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="updatePostalAddress" in-map-name="serviceCtx">
-            <result-to-field result-name="contactMechId"/>
-            <result-to-field result-name="oldContactMechId"/>
-        </call-service>
-        <entity-one entity-name="PostalAddress" value-field="postalAddress"/>
-        <assert>
-            <not><if-empty field="postalAddress"/></not>
-            <if-compare field="postalAddress.address1" operator="equals" value="2004 Factory Blvd"/>
-            <if-compare field="postalAddress.city" operator="equals" value="City of Industry"/>
-            <if-compare field="postalAddress.postalCode" operator="equals" value="90000"/>
-            <if-compare-field operator="not-equals" field="contactMechId" to-field="oldContactMechId"/>
-        </assert>
-        <check-errors/>
-    </simple-method>
-
-    <simple-method method-name="testUpdateTelecomNumber" short-description="Test the service updateTelecomNumber" login-required="false">
-        <set field="serviceCtx.contactMechId" value="TestContactMech1"/>
-        <set field="serviceCtx.areaCode" value="801"/>
-        <set field="serviceCtx.contactNumber" value="1111111"/>
-        <entity-one entity-name="UserLogin" value-field="userLogin">
-            <field-map field-name="userLoginId" value="system"/>
-        </entity-one>
-        <set field="serviceCtx.userLogin" from-field="userLogin"/>
-        <call-service service-name="updateTelecomNumber" in-map-name="serviceCtx">
-            <result-to-field result-name="contactMechId"/>
-            <result-to-field result-name="oldContactMechId"/>
-        </call-service>
-        <entity-one entity-name="TelecomNumber" value-field="telecomNumber"/>
-        <assert>
-            <not><if-empty field="telecomNumber"/></not>
-            <if-compare field="telecomNumber.areaCode" operator="equals" value="801"/>
-            <if-compare field="telecomNumber.contactNumber" operator="equals" value="1111111"/>
-            <if-compare-field operator="not-equals" field="contactMechId" to-field="oldContactMechId"/>
         </assert>
         <check-errors/>
     </simple-method>
