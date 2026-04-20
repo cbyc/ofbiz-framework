@@ -17,16 +17,16 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-
-<ofbiz-component name="contactmech"
+<test-suite suite-name="contactmechtests"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://ofbiz.apache.org/dtds/ofbiz-component.xsd">
-    <resource-loader name="main" type="component"/>
-    <classpath type="dir" location="config"/>
-    <classpath type="jar" location="lib/*"/>
+        xsi:noNamespaceSchemaLocation="https://ofbiz.apache.org/dtds/test-suite.xsd">
 
-    <entity-resource type="model" reader-name="main" loader="main" location="entitydef/contactmech-entitymodel.xml"/>
-    <service-resource type="model" loader="main" location="servicedef/services.xml"/>
+    <test-case case-name="loadContactMechTestData">
+        <entity-xml action="load" entity-xml-url="component://contactmech/testdef/data/ContactMechTestData.xml"/>
+    </test-case>
 
-    <test-suite loader="main" location="testdef/contactmech-tests.xml"/>
-</ofbiz-component>
+    <test-case case-name="contactMechIntegration-tests">
+        <junit-test-suite class-name="org.apache.ofbiz.contactmech.test.ContactMechIntegrationTests"/>
+    </test-case>
+
+</test-suite>
