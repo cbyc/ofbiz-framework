@@ -17,6 +17,8 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+## THIS IS AN EXPERIMENTAL FORK OF OFBIZ - DO NOT USE
+
 # Apache OFBiz®
 
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
