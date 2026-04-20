@@ -22,6 +22,7 @@ under the License.
         xsi:noNamespaceSchemaLocation="https://ofbiz.apache.org/dtds/component-loader.xsd">
     <load-component component-location="datamodel"/>
     <load-component component-location="party"/>
+    <load-component component-location="contactmech"/>
     <load-component component-location="securityext"/>
     <load-component component-location="content"/>
     <load-component component-location="workeffort"/>
