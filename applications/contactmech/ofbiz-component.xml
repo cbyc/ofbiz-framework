@@ -26,4 +26,5 @@ under the License.
     <classpath type="jar" location="lib/*"/>
 
     <entity-resource type="model" reader-name="main" loader="main" location="entitydef/contactmech-entitymodel.xml"/>
+    <service-resource type="model" loader="main" location="servicedef/services.xml"/>
 </ofbiz-component>
