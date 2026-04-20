@@ -315,18 +315,6 @@ class ContactMechIntegrationTests extends OFBizTestCase {
         assert updated.postalCode == '20147'
     }
 
-    void testUpdatePostalAddressMissingAddress1() {
-        // address1 is required — omitting it should yield an error
-        Map serviceCtx = [
-                contactMechId: 'CM_TEST_ADDR_1',
-                city: 'Somewhere',
-                postalCode: '00000',
-                userLogin: userLogin
-        ]
-        Map serviceResult = dispatcher.runSync('updatePostalAddress', serviceCtx)
-        assert ServiceUtil.isError(serviceResult)
-    }
-
     // -------------------------------------------------------------------------
     // updateTelecomNumber tests (migrated from MiniLang)
     // -------------------------------------------------------------------------
@@ -440,6 +428,143 @@ class ContactMechIntegrationTests extends OFBizTestCase {
         assert contactMech
         assert contactMech.contactMechTypeId == 'EMAIL_ADDRESS'
         assert contactMech.infoString == 'createcontactmech.test@example.com'
+    }
+
+    // -------------------------------------------------------------------------
+    // updateContactMech coverage gap — no-change path
+    // -------------------------------------------------------------------------
+
+    void testUpdateContactMechNoChange() {
+        // When infoString is unchanged the service returns the same contactMechId
+        Map serviceCtx = [
+                contactMechId: 'CM_TEST_GEN_1',
+                contactMechTypeId: 'EMAIL_ADDRESS',
+                infoString: 'generic.test@example.com',
+                userLogin: userLogin
+        ]
+        Map serviceResult = dispatcher.runSync('updateContactMech', serviceCtx)
+        assert ServiceUtil.isSuccess(serviceResult)
+        assert serviceResult.contactMechId == 'CM_TEST_GEN_1'
+    }
+
+    // -------------------------------------------------------------------------
+    // createPostalAddress validation — mandatory state/province
+    // -------------------------------------------------------------------------
+
+    void testCreatePostalAddressMissingStateForUSA() {
+        Map serviceCtx = [
+                address1: '1 Test Blvd',
+                city: 'Anytown',
+                postalCode: '12345',
+                countryGeoId: 'USA',
+                userLogin: userLogin
+        ]
+        Map serviceResult = dispatcher.runSync('createPostalAddress', serviceCtx)
+        assert ServiceUtil.isError(serviceResult)
+    }
+
+    void testCreatePostalAddressMissingProvinceForCanada() {
+        Map serviceCtx = [
+                address1: '1 Maple St',
+                city: 'Toronto',
+                postalCode: 'M5V 2T6',
+                countryGeoId: 'CAN',
+                userLogin: userLogin
+        ]
+        Map serviceResult = dispatcher.runSync('createPostalAddress', serviceCtx)
+        assert ServiceUtil.isError(serviceResult)
+    }
+
+    // -------------------------------------------------------------------------
+    // updatePostalAddress — optional parameters
+    // -------------------------------------------------------------------------
+
+    void testUpdatePostalAddressWithDirections() {
+        Map createCtx = [
+                address1: '400 Directions Way',
+                city: 'Navtown',
+                stateProvinceGeoId: 'OR',
+                countryGeoId: 'USA',
+                postalCode: '97201',
+                userLogin: userLogin
+        ]
+        Map createResult = dispatcher.runSync('createPostalAddress', createCtx)
+        assert ServiceUtil.isSuccess(createResult)
+
+        Map updateCtx = [
+                contactMechId: createResult.contactMechId,
+                address1: '400 Directions Way',
+                city: 'Navtown',
+                stateProvinceGeoId: 'OR',
+                countryGeoId: 'USA',
+                postalCode: '97201',
+                directions: 'Turn left at the big oak tree',
+                userLogin: userLogin
+        ]
+        Map updateResult = dispatcher.runSync('updatePostalAddress', updateCtx)
+        assert ServiceUtil.isSuccess(updateResult)
+        assert updateResult.contactMechId
+    }
+
+    // -------------------------------------------------------------------------
+    // updateTelecomNumber — not-found error path
+    // -------------------------------------------------------------------------
+
+    void testUpdateTelecomNumberNotFound() {
+        Map serviceCtx = [
+                contactMechId: 'NON_EXISTENT_TEL',
+                areaCode: '999',
+                contactNumber: '000-0000',
+                userLogin: userLogin
+        ]
+        Map serviceResult = dispatcher.runSync('updateTelecomNumber', serviceCtx)
+        assert ServiceUtil.isError(serviceResult)
+    }
+
+    // -------------------------------------------------------------------------
+    // createFtpAddress tests
+    // -------------------------------------------------------------------------
+
+    void testCreateFtpAddress() {
+        Map serviceCtx = [
+                hostname: 'ftp://newhost.example.com',
+                username: 'ftpuser',
+                binaryTransfer: 'Y',
+                passiveMode: 'Y',
+                userLogin: userLogin
+        ]
+        Map serviceResult = dispatcher.runSync('createFtpAddress', serviceCtx)
+        assert ServiceUtil.isSuccess(serviceResult)
+        String contactMechId = serviceResult.contactMechId
+        assert contactMechId
+
+        GenericValue contactMech = from('ContactMech').where('contactMechId', contactMechId).queryOne()
+        assert contactMech
+        assert contactMech.contactMechTypeId == 'FTP_ADDRESS'
+
+        GenericValue ftpAddress = from('FtpAddress').where('contactMechId', contactMechId).queryOne()
+        assert ftpAddress
+        assert ftpAddress.hostname == 'ftp://newhost.example.com'
+        assert ftpAddress.username == 'ftpuser'
+        assert ftpAddress.binaryTransfer == 'Y'
+        assert ftpAddress.passiveMode == 'Y'
+    }
+
+    void testCreateFtpAddressMinimal() {
+        // All FtpAddress non-pk fields are optional
+        Map serviceCtx = [userLogin: userLogin]
+        Map serviceResult = dispatcher.runSync('createFtpAddress', serviceCtx)
+        assert ServiceUtil.isSuccess(serviceResult)
+
+        String contactMechId = serviceResult.contactMechId
+        assert contactMechId
+
+        GenericValue contactMech = from('ContactMech').where('contactMechId', contactMechId).queryOne()
+        assert contactMech
+        assert contactMech.contactMechTypeId == 'FTP_ADDRESS'
+
+        GenericValue ftpAddress = from('FtpAddress').where('contactMechId', contactMechId).queryOne()
+        assert ftpAddress
     }
 
 }

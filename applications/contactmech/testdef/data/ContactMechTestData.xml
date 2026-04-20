@@ -39,4 +39,8 @@ under the License.
 
     <!-- ContactMech data for updateContactMech test -->
     <ContactMech contactMechId="CM_TEST_GEN_1" contactMechTypeId="EMAIL_ADDRESS" infoString="generic.test@example.com"/>
+
+    <!-- ContactMech data for updateFtpAddressWithHistory tests -->
+    <ContactMech contactMechId="CM_TEST_FTP_1" contactMechTypeId="FTP_ADDRESS"/>
+    <FtpAddress contactMechId="CM_TEST_FTP_1" hostname="ftp://test.example.com" username="testuser" binaryTransfer="Y" passiveMode="Y"/>
 </entity-engine-xml>
