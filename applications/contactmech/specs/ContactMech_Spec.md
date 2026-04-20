@@ -865,7 +865,91 @@ _(None beyond the standard success/error response.)_
 
 ---
 
-## 4. Glossary
+## 4. Implementation Architecture
+
+The implementation follows a three-layer hexagonal (ports-and-adapters) architecture. Only the Adapter layer is allowed to import OFBiz types.
+
+### 4.1 Domain Model
+
+Pure Groovy/Java POJOs with **zero** `org.apache.ofbiz.*` imports. Field names match OFBiz entity field names exactly so that the Adapter layer can copy them without translation.
+
+**Aggregate and value types** mirror the entities defined in Section 3.4:
+
+| Type | Fields (mirrors entity) |
+|---|---|
+| `ContactMech` | `contactMechId`, `contactMechTypeId`, `infoString` |
+| `PostalAddress` | `contactMechId`, `toName`, `attnName`, `address1`, `address2`, `houseNumber`, `houseNumberExt`, `directions`, `city`, `cityGeoId`, `postalCode`, `postalCodeExt`, `postalCodeGeoId`, `countryGeoId`, `stateProvinceGeoId`, `countyGeoId`, `municipalityGeoId`, `geoPointId` |
+| `TelecomNumber` | `contactMechId`, `countryCode`, `areaCode`, `contactNumber`, `askForName` |
+| `FtpAddress` | `contactMechId`, `hostname`, `port`, `username`, `ftpPassword`, `binaryTransfer`, `filePath`, `zipFile`, `passiveMode`, `defaultTimeout` |
+
+**Result types** carry the output of create and update operations without coupling callers to OFBiz map conventions:
+
+| Type | Fields | Used by |
+|---|---|---|
+| `CreateResult` | `contactMechId: String` | all `create*` services |
+| `UpdateResult` | `contactMechId: String`, `oldContactMechId: String` | all `update*` services |
+
+**`DomainError`** is a value type carrying a single `messageKey: String`. Every message key it may hold is already defined in Section 2 (e.g. `ServiceValueNotFound`, `PartyStateInUsMissing`, `PartyEmailAddressNotFormattedCorrectly`). Core Logic returns a `DomainError` instead of throwing; the Adapter layer converts it to an OFBiz error result.
+
+---
+
+### 4.2 Core Logic
+
+Pure Groovy/Java classes that implement every business rule listed in Section 2. Dependencies are limited to:
+
+- Domain Model types (Section 4.1).
+- Repository interfaces defined in this layer (see below).
+- Standard Java/Groovy library — no OFBiz imports of any kind.
+
+**Repository interfaces** follow the ports-and-adapters pattern: they are declared here in the Core Logic layer and describe the persistence operations Core Logic needs. Each interface uses only Domain Model types and standard Java/Groovy types as parameter and return types.
+
+Example interface shapes (illustrative, not exhaustive):
+
+```
+interface ContactMechRepository {
+    Optional<ContactMech> findById(String contactMechId)
+    String create(ContactMech contactMech)          // returns generated/supplied id
+}
+
+interface PostalAddressRepository {
+    Optional<PostalAddress> findById(String contactMechId)
+    void create(PostalAddress postalAddress)
+}
+
+interface TelecomNumberRepository {
+    Optional<TelecomNumber> findById(String contactMechId)
+    void create(TelecomNumber telecomNumber)
+}
+
+interface FtpAddressRepository {
+    Optional<FtpAddress> findById(String contactMechId)
+    void create(FtpAddress ftpAddress)
+}
+```
+
+Core Logic classes receive repository instances through constructor injection. They return `CreateResult`, `UpdateResult`, or `DomainError` — never OFBiz maps.
+
+---
+
+### 4.3 Adapter (Anti-Corruption Layer)
+
+One thin OFBiz Groovy script per service group (e.g. one script for postal-address services, one for telecom-number services, etc.). This is the **only** layer that imports `org.apache.ofbiz.*` types.
+
+Responsibilities of each Adapter script:
+
+1. **Receive parameters** — read the OFBiz `parameters` map supplied by the service engine.
+2. **Permission checks** — call `partyBasePermissionCheck` (where required by Section 3.3) before invoking Core Logic.
+3. **Instantiate repositories** — create OFBiz-backed repository implementations that wrap the `delegator`. These implementations translate between Domain Model types and OFBiz `GenericValue` objects.
+4. **Call Core Logic** — construct the relevant Core Logic class with the repository instances and invoke the appropriate method.
+5. **Translate results** — convert a `CreateResult` or `UpdateResult` back into an OFBiz result map using `ServiceUtil.returnSuccess()`; convert a `DomainError` into an OFBiz error map using `ServiceUtil.returnError()` with the localised message looked up via `UtilProperties.getMessage(resource, key, locale)`.
+
+**Method syntax required for service entry points:** Each service entry point must be declared as a Groovy **method**, not a closure. Use `def serviceName() { … }`, not `def serviceName = { … }`. OFBiz's `GroovyEngine` locates the `invoke` target by calling `invokeMethod(name, args)` on the compiled Script class. Closures defined with `def name = { … }` at script level are local variables of the script's `run()` method and are invisible to `invokeMethod`; the engine throws `MissingMethodException` at runtime. Helper functions shared between service methods must also be declared as methods (`def helperName(args) { … }`), not as closure properties.
+
+The OFBiz-backed repository implementations live in the Adapter layer alongside the scripts. They are the only classes in the codebase that perform entity operations (`delegator.findOne`, `delegator.makeValue`, `.create()`, `.store()`, etc.).
+
+---
+
+## 5. Glossary
 
 ### ContactMech
 
